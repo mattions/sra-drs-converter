@@ -40,14 +40,14 @@ class Processor:
 
     def get_drs_info(self, drs: str):  # function that returns content_id based on the previous DRS id
         name = ""
-        is_bundle = ""
-        is_online = ""
-        num_offline = ""
+        is_bundle = False
+        is_online = False
+        num_offline = 0
         num_objects = 0
         
         # situation 1: no drs_id returned
         if drs == "":
-            return is_bundle, is_online, num_offline, name
+            return is_bundle, is_online, num_offline, name, num_objects
         
         # use ?expand = true to find all objects in a bundle. does it return other bundles as well or just blobs?
         r1 = requests.get(f"https://locate.be-md.ncbi.nlm.nih.gov/ga4gh/drs/v1/objects/{drs}?expand=true")     
@@ -61,6 +61,7 @@ class Processor:
                 is_bundle = False
                 is_online = False
                 num_offline = 1
+                num_objects = 1
 
             if self.verbose == True:
                 if r1.status_code == 404:
@@ -72,7 +73,7 @@ class Processor:
                 else:
                     print("Unknown Error")
                     
-            return is_bundle, is_online, num_offline, name
+            return is_bundle, is_online, num_offline, name, num_objects
                     
         # r1.status_code == 200, file or bundle is online
         name = r1.json()['name']
@@ -170,7 +171,8 @@ if __name__ == "__main__":
     df_processed = processor.run(df)
     print("Finished DRS acquisition.")
     
-    target_filename = os.path.basename(args.sraRunTable).replace(".txt", "_updated.csv")
+    target_filename = os.path.basename(args.sraRunTable).replace(".txt", "_updated.csv") # for use when input is txt
+    # target_filename = os.path.basename(args.sraRunTable).replace(".", "_updated.") # for use when input is csv
     df.to_csv(target_filename, index=False)                #production level - writes to output-files
  
     offline_blobs = sum(df['num_offline'])
@@ -188,3 +190,4 @@ if __name__ == "__main__":
     
     end_time = datetime.now()
     print('Duration: {}'.format(end_time - start_time))
+
