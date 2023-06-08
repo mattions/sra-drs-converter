@@ -43,6 +43,7 @@ class Processor:
         is_bundle = ""
         is_online = ""
         num_offline = ""
+        num_objects = 0
         
         # situation 1: no drs_id returned
         if drs == "":
@@ -91,7 +92,7 @@ class Processor:
             if num_offline > 0:
                 is_online = False
         
-        return is_bundle, is_online, num_offline, name
+        return is_bundle, is_online, num_offline, name, num_objects
 
     
     
@@ -123,6 +124,10 @@ class Processor:
         
         df["num_offline"] = df["drs_info"].apply(
             lambda cell: self.split_list(cell, 2)
+        )
+
+        df['total_objects'] = df["drs_info"].apply(
+            lambda cell: self.split_list(cell, 4)
         )
         
         df["name"] = df["drs_info"].apply(
@@ -170,14 +175,15 @@ if __name__ == "__main__":
  
     offline_blobs = sum(df['num_offline'])
     bundles = df['is_bundle'].sum()
+    total_files = sum(df['total_objects'] )
     output_text = f"The input file had {len(df)} rows\n \
         Of those, {bundles} are bundles\n \
-        A total of {offline_blobs} files in this dataset are offline\n"
+        Total objects: {total_files}, of these {offline_blobs} are offline\n"
     text_file = open("output_stats.txt", "w")
     n = text_file.write(output_text)
     text_file.close()
     
-    print(f"A total of {offline_blobs} files in this dataset are offline")
+    print(f"Total DRS files: {total_files}, Offline: {offline_blobs}.")
     print (f"Updated file written into {target_filename}")
     
     end_time = datetime.now()
