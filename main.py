@@ -90,8 +90,8 @@ class Processor:
             # count num of online/offline blobs within a bundle.
             offline_blobs = list(map(lambda cell: self.count_offline(cell), r1.json()["contents"]))
             num_offline = sum(offline_blobs)
-            if num_offline > 0:
-                is_online = False
+            if num_offline == 0:
+                is_online = True
         
         return is_bundle, is_online, num_offline, name, num_objects
 
